@@ -2,18 +2,18 @@
 
 namespace Illuminate\Notifications\Channels;
 
-use Illuminate\Notifications\Messages\NexmoMessage;
+use Illuminate\Notifications\Messages\VonageMessage;
 use Illuminate\Notifications\Notification;
-use Nexmo\Client as NexmoClient;
+use Vonage\Client as VonageClient;
 
-class NexmoSmsChannel
+class VonageSmsChannel
 {
     /**
-     * The Nexmo client instance.
+     * The Vonage client instance.
      *
-     * @var \Nexmo\Client
+     * @var \Vonage\Client
      */
-    protected $nexmo;
+    protected $client;
 
     /**
      * The phone number notifications should be sent from.
@@ -23,16 +23,16 @@ class NexmoSmsChannel
     protected $from;
 
     /**
-     * Create a new Nexmo channel instance.
+     * Create a new Vonage channel instance.
      *
-     * @param  \Nexmo\Client  $nexmo
+     * @param  \Vonage\Client  $client
      * @param  string  $from
      * @return void
      */
-    public function __construct(NexmoClient $nexmo, $from)
+    public function __construct(VonageClient $client, $from)
     {
         $this->from = $from;
-        $this->nexmo = $nexmo;
+        $this->client = $client;
     }
 
     /**
@@ -40,18 +40,18 @@ class NexmoSmsChannel
      *
      * @param  mixed  $notifiable
      * @param  \Illuminate\Notifications\Notification  $notification
-     * @return \Nexmo\Message\Message
+     * @return \Vonage\Message\Message
      */
     public function send($notifiable, Notification $notification)
     {
-        if (! $to = $notifiable->routeNotificationFor('nexmo', $notification)) {
+        if (! $to = $notifiable->routeNotificationFor('vonage', $notification)) {
             return;
         }
 
-        $message = $notification->toNexmo($notifiable);
+        $message = $notification->toVonage($notifiable);
 
         if (is_string($message)) {
-            $message = new NexmoMessage($message);
+            $message = new VonageMessage($message);
         }
 
         $payload = [
@@ -66,6 +66,6 @@ class NexmoSmsChannel
             $payload['callback'] = $message->statusCallback;
         }
 
-        return ($message->client ?? $this->nexmo)->message()->send($payload);
+        return ($message->client ?? $this->client)->message()->send($payload);
     }
 }
